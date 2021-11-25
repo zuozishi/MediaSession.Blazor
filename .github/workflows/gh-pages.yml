@@ -7,6 +7,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      APP_NAME: MediaSession.Blazor.Sample
     steps:
       - name: Checkout Code
         uses: actions/checkout@v2
@@ -14,12 +16,12 @@ jobs:
         uses: actions/setup-dotnet@v1.9.0
         with:
           dotnet-version: 6.0.x
-      - name: Publish
-        run: dotnet publish MediaSession.Blazor.Sample/MediaSession.Blazor.Sample.csproj -c Release -o release
       - name: Config base address
-        run: sed -i 's/<base href="\/" \/>/<base href="\/MediaSession.Blazor\/" \/>/g' release/wwwroot/index.html
+        run: sed -i 's/<base href="\/" \/>/<base href="\/MediaSession.Blazor\/" \/>/g' $APP_NAME/wwwroot/index.html
       - name: Add .nojekyll file
-        run: touch release/wwwroot/.nojekyll
+        run: touch $APP_NAME/wwwroot/.nojekyll
+      - name: Publish
+        run: dotnet publish $APP_NAME/MediaSession.Blazor.Sample.csproj -c Release -o release
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3.7.3
         with:
