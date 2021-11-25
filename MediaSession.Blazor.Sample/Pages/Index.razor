@@ -1,0 +1,272 @@
+﻿@page "/"
+@using MediaSession.Blazor.Components
+
+@inject IHowl Howl
+@inject IMediaSession MediaSession
+
+<PageTitle>MediaSession.Blazor</PageTitle>
+
+<Card Title="Control">
+    <Space Direction="DirectionVHType.Vertical">
+        @if(_currentItem != null)
+        {
+            <SpaceItem>
+                <Card Title="Now Playing" Style="width: 400px;" Bordered>
+                    <CardMeta AvatarTemplate="@avatarTemplate(_currentItem.Artwork.First().Src)"
+                        Title="@_currentItem.Title"
+                        Description="@($"{_currentItem.Artist} - {_currentItem.Album}")" />
+                </Card>
+            </SpaceItem>
+        }
+        <SpaceItem>
+            <Slider TValue="double" DefaultValue="35" Style="width: 400px;" Value="@_sliderValue" Max="@_sliderMax" Step="1" OnChange="OnSliderValueChange" OnAfterChange="OnSliderValueChange" TipFormatter="TipFormatter" />
+        </SpaceItem>
+        <SpaceItem>
+            <Space>
+                <SpaceItem>
+                    <Button @onclick="MovePrevious" Icon="@IconType.Outline.StepBackward">Previous</Button>
+                </SpaceItem>
+                <SpaceItem>
+                    @if(_playbackState == PlaybackState.Playing)
+                    {
+                        <Button @onclick="Pause" Icon="@IconType.Outline.PauseCircle">Pause</Button>
+                    }else
+                    {
+                        <Button @onclick="Play" Icon="@IconType.Outline.PlayCircle">Play</Button>
+                    }
+                </SpaceItem>
+                <SpaceItem>
+                    <Button @onclick="MoveNext" Icon="@IconType.Outline.StepForward">Next</Button>
+                </SpaceItem>
+            </Space>
+        </SpaceItem>
+    </Space>
+</Card>
+<br />
+<Card Title="Playlist">
+    <Table TItem="MusicItem" DataSource="@MusicItems" Size="TableSize.Small">
+        <Column @bind-Field="@context.Title"></Column>
+        <Column @bind-Field="@context.Artist"></Column>
+        <Column @bind-Field="@context.Album"></Column>
+        <Column @bind-Field="@context.Artwork">
+            <Image Width="80" Height="80" Src="@context.Artwork.First().Src"/>
+        </Column>
+        <ActionColumn Title="Action">
+            <Space Size="@("middle")">
+                <SpaceItem>
+                    @if(context != _currentItem)
+                    {
+                        <Button @onclick="() => Play(context)">Play</Button>
+                    }
+                    else
+                    {
+                        <Tag Color="green">Now Playing</Tag>
+                    }
+                </SpaceItem>
+            </Space>
+        </ActionColumn>
+    </Table>
+</Card>
+
+@code{
+    private MusicItem _currentItem;
+    private int? _soundId;
+    private PlaybackState _playbackState = PlaybackState.None;
+    private RenderFragment avatarTemplate(string url) => @<Avatar Src="@url" />
+    ;
+    private System.Timers.Timer _timer;
+    private double _sliderValue = 0;
+    private double _sliderMax = 0;
+
+    protected override Task OnInitializedAsync()
+    {
+        _timer = new(1000);
+        _timer.Elapsed += async (s, e) =>
+        {
+            if (!_soundId.HasValue || _playbackState != PlaybackState.Playing) return;
+            var current = await Howl.GetCurrentTime(_soundId.Value);
+            var total = await Howl.GetTotalTime(_soundId.Value);
+            await MediaSession.SetPositionState(new()
+            {
+                Duration = total.TotalSeconds,
+                Position = current.TotalSeconds
+            });
+            await InvokeAsync(() =>
+            {
+                _sliderValue = (int)current.TotalSeconds;
+                _sliderMax = (int)total.TotalSeconds;
+                StateHasChanged();
+            });
+        };
+        _timer.Enabled = true;
+        MediaSession.OnPause += async () =>
+        {
+            if (_soundId.HasValue)
+                await Howl.Pause(_soundId.Value);
+        };
+        MediaSession.OnPlay += async () =>
+        {
+            if (_soundId.HasValue)
+                await Howl.Play(_soundId.Value);
+        };
+        MediaSession.OnNextTrack += async () =>
+        {
+            await MoveNext();
+        };
+        MediaSession.OnPreviouStrack += async () =>
+        {
+            await MovePrevious();
+        };
+        MediaSession.OnSeekTo += async (e) =>
+        {
+            if (_soundId.HasValue)
+                await Howl.Seek(_soundId.Value, TimeSpan.FromSeconds(e.SeekTime));
+        };
+        Howl.OnPause += async (e) =>
+        {
+
+            await MediaSession.SetPlaybackState(PlaybackState.Paused);
+            await InvokeAsync(() =>
+            {
+                _playbackState = PlaybackState.Paused;
+                StateHasChanged();
+            });
+        };
+        Howl.OnPlay += async (e) =>
+        {
+            await MediaSession.SetPlaybackState(PlaybackState.Playing);
+            await InvokeAsync(() =>
+            {
+                _playbackState = PlaybackState.Playing;
+                StateHasChanged();
+            });
+        };
+        Howl.OnStop += async (e) =>
+        {
+            await MediaSession.SetPlaybackState(PlaybackState.None);
+            await InvokeAsync(() =>
+            {
+                _playbackState = PlaybackState.None;
+                StateHasChanged();
+            });
+        };
+        Howl.OnEnd += async (e) =>
+        {
+            await MoveNext();
+        };
+        return base.OnInitializedAsync();
+    }
+
+    private async Task MoveNext()
+    {
+        int index = -1;
+        if (_currentItem != null)
+            index = MusicItems.IndexOf(_currentItem);
+        index += 1;
+        if (index >= MusicItems.Count)
+            index = 0;
+        await Play(MusicItems[index]);
+    }
+
+    private async Task MovePrevious()
+    {
+        int index = MusicItems.Count;
+        if (_currentItem != null)
+            index = MusicItems.IndexOf(_currentItem);
+        index -= 1;
+        if(index < 0)
+            index = MusicItems.Count - 1;
+        await Play(MusicItems[index]);
+    }
+
+    private async Task Play(MusicItem item)
+    {
+        if (_soundId.HasValue)
+            await Howl.Stop(_soundId.Value);
+        await MediaSession.SetMediaMetadata((MediaMetadata)item);
+        _soundId = await Howl.Play(item.Source);
+        await InvokeAsync(() =>
+        {
+            _currentItem = item;
+            StateHasChanged();
+        });
+    }
+
+    private async Task Play()
+    {
+        if (_soundId == null)
+            await MoveNext();
+        else
+            await Howl.Play(_soundId.Value);
+    }
+
+    private async Task Pause()
+    {
+        if (_soundId.HasValue)
+            await Howl.Pause(_soundId.Value);
+    }
+
+    private void OnSliderValueChange(double value)
+    {
+        if(_soundId.HasValue)
+            Howl.Seek(_soundId.Value, TimeSpan.FromSeconds(value));
+    }
+
+    private string TipFormatter(double value)
+    {
+        var ts = TimeSpan.FromSeconds(value);
+        return ts.ToString(@"mm\:ss");
+    }
+
+    private List<MusicItem> MusicItems = new MusicItem[]
+    {
+        new()
+        {
+            Title = "嘘の火花",
+            Artist = "96猫",
+            Album = "嘘の火花",
+            Source = "assets/1.mp3",
+            Artwork = new MediaArtwork[]
+            {
+                new()
+                {
+                    Src = "assets/1.jpg",
+                    Sizes = new(128),
+                    Type = "image/jpeg"
+                }
+            }
+        },
+        new()
+        {
+            Title = "太陽と向日葵",
+            Artist = "Minto薄荷糖/顾时笙",
+            Album = "太阳与向日葵",
+            Source = "assets/2.mp3",
+            Artwork = new MediaArtwork[]
+            {
+                new()
+                {
+                    Src = "assets/2.jpg",
+                    Sizes = new(128),
+                    Type = "image/jpeg"
+                }
+            }
+        },
+        new()
+        {
+            Title = "霜雪千年",
+            Artist = "洛天依/乐正绫",
+            Album = "Vsinger作品集-2",
+            Source = "assets/3.mp3",
+            Artwork = new MediaArtwork[]
+            {
+                new()
+                {
+                    Src = "assets/3.jpg",
+                    Sizes = new(128),
+                    Type = "image/jpeg"
+                }
+            }
+        },
+    }.ToList();
+}
