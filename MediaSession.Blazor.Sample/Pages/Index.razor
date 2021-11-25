@@ -12,7 +12,7 @@
         {
             <SpaceItem>
                 <Card Title="Now Playing" Style="width: 400px;" Bordered>
-                    <CardMeta AvatarTemplate="@avatarTemplate(_currentItem.Artwork.First().Src)"
+                    <CardMeta AvatarTemplate="@avatarTemplate(_currentItem.Cover)"
                         Title="@_currentItem.Title"
                         Description="@($"{_currentItem.Artist} - {_currentItem.Album}")" />
                 </Card>
@@ -48,8 +48,8 @@
         <Column @bind-Field="@context.Title"></Column>
         <Column @bind-Field="@context.Artist"></Column>
         <Column @bind-Field="@context.Album"></Column>
-        <Column @bind-Field="@context.Artwork">
-            <Image Width="80" Height="80" Src="@context.Artwork.First().Src"/>
+        <Column @bind-Field="@context.Cover">
+            <Image Width="80" Height="80" Src="@context.Cover"/>
         </Column>
         <ActionColumn Title="Action">
             <Space Size="@("middle")">
@@ -183,7 +183,7 @@
     {
         if (_soundId.HasValue)
             await Howl.Stop(_soundId.Value);
-        await MediaSession.SetMediaMetadata((MediaMetadata)item);
+        await MediaSession.SetMediaMetadata(item.ToMediaMetadata());
         _soundId = await Howl.Play(item.Source);
         await InvokeAsync(() =>
         {
@@ -226,15 +226,7 @@
             Artist = "96猫",
             Album = "嘘の火花",
             Source = "assets/1.mp3",
-            Artwork = new MediaArtwork[]
-            {
-                new()
-                {
-                    Src = "assets/1.jpg",
-                    Sizes = new(128),
-                    Type = "image/jpeg"
-                }
-            }
+            Cover = "assets/1.jpg"
         },
         new()
         {
@@ -242,15 +234,7 @@
             Artist = "Minto薄荷糖/顾时笙",
             Album = "太阳与向日葵",
             Source = "assets/2.mp3",
-            Artwork = new MediaArtwork[]
-            {
-                new()
-                {
-                    Src = "assets/2.jpg",
-                    Sizes = new(128),
-                    Type = "image/jpeg"
-                }
-            }
+            Cover = "assets/2.jpg"
         },
         new()
         {
@@ -258,15 +242,7 @@
             Artist = "洛天依/乐正绫",
             Album = "Vsinger作品集-2",
             Source = "assets/3.mp3",
-            Artwork = new MediaArtwork[]
-            {
-                new()
-                {
-                    Src = "assets/3.jpg",
-                    Sizes = new(128),
-                    Type = "image/jpeg"
-                }
-            }
+            Cover = "assets/3.jpg"
         },
     }.ToList();
 }
