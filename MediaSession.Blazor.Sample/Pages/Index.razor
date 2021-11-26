@@ -8,48 +8,46 @@
 <PageTitle>MediaSession.Blazor</PageTitle>
 
 <Card Title="Control">
-    <Space Direction="DirectionVHType.Vertical">
-        @if(_currentItem != null)
-        {
-            <SpaceItem>
-                <Card Title="Now Playing" Style="width: 400px;" Bordered>
-                    <CardMeta AvatarTemplate="@avatarTemplate(_currentItem.Cover)"
-                        Title="@_currentItem.Title"
-                        Description="@($"{_currentItem.Artist} - {_currentItem.Album}")" />
-                </Card>
-            </SpaceItem>
-        }
+    @if(_currentItem != null)
+    {
+        <Card Title="Now Playing" Style="width: 400px;" Bordered>
+            <CardMeta AvatarTemplate="@avatarTemplate(_currentItem.Cover)"
+                Title="@_currentItem.Title"
+                Description="@($"{_currentItem.Artist} - {_currentItem.Album}")" />
+        </Card>
+        <br />
+    }
+    <Slider TValue="double" Value="@_sliderValue" Max="@_sliderMax" Step="1" OnChange="OnSliderValueChange" OnAfterChange="OnSliderValueChange" TipFormatter="TipFormatter" />
+    <br />
+    <Space>
         <SpaceItem>
-            <Slider TValue="double" DefaultValue="35" Style="width: 400px;" Value="@_sliderValue" Max="@_sliderMax" Step="1" OnChange="OnSliderValueChange" OnAfterChange="OnSliderValueChange" TipFormatter="TipFormatter" />
+            <Button @onclick="MovePrevious" Icon="@IconType.Fill.StepBackward">Previous</Button>
         </SpaceItem>
         <SpaceItem>
-            <Space>
-                <SpaceItem>
-                    <Button @onclick="MovePrevious" Icon="@IconType.Fill.StepBackward">Previous</Button>
-                </SpaceItem>
-                <SpaceItem>
-                    @if(_playbackState == PlaybackState.Playing)
-                    {
-                        <Button @onclick="Pause" Icon="@IconType.Fill.PauseCircle">Pause</Button>
-                    }else
-                    {
-                        <Button @onclick="Play" Icon="@IconType.Fill.PlayCircle">Play</Button>
-                    }
-                </SpaceItem>
-                <SpaceItem>
-                    <Button @onclick="MoveNext" Icon="@IconType.Fill.StepForward">Next</Button>
-                </SpaceItem>
-                <SpaceItem>
-                    @if(isPictureInPictureEnabled)
-                    {
-                        <Button @onclick="() => MediaSession.ExitPictureInPicture()" Icon="@IconType.Outline.VerticalAlignBottom">Exit Picture-in-Picture</Button>
-                    }
-                    else
-                    {
-                        <Button @onclick="() => MediaSession.RequestPictureInPicture()" Icon="@IconType.Outline.VerticalAlignTop">Enter Picture-in-Picture</Button>
-                    }
-                </SpaceItem>
-            </Space>
+            @if(_playbackState == PlaybackState.Playing)
+            {
+                <Button @onclick="Pause" Icon="@IconType.Fill.PauseCircle">Pause</Button>
+            }else
+            {
+                <Button @onclick="Play" Icon="@IconType.Fill.PlayCircle">Play</Button>
+            }
+        </SpaceItem>
+        <SpaceItem>
+            <Button @onclick="MoveNext" Icon="@IconType.Fill.StepForward">Next</Button>
+        </SpaceItem>
+    </Space>
+    <br />
+    <br />
+    <Space>
+        <SpaceItem>
+            @if(isPictureInPictureEnabled)
+            {
+                <Button @onclick="() => MediaSession.ExitPictureInPicture()" Icon="@IconType.Outline.VerticalAlignBottom">Exit Picture-in-Picture Mode</Button>
+            }
+            else
+            {
+                <Button @onclick="() => MediaSession.RequestPictureInPicture()" Icon="@IconType.Outline.VerticalAlignTop">Enter Picture-in-Picture Mode</Button>
+            }
         </SpaceItem>
     </Space>
 </Card>
@@ -100,12 +98,12 @@
             if (!_soundId.HasValue || _playbackState != PlaybackState.Playing) return;
             var current = await Howl.GetCurrentTime(_soundId.Value);
             var total = await Howl.GetTotalTime(_soundId.Value);
-            await MediaSession.SetPositionState(new()
-            {
-                Duration = total.TotalSeconds,
-                Position = current.TotalSeconds
-            });
-            await InvokeAsync(() =>
+        await MediaSession.SetPositionState(new()
+        {
+            Duration = total.TotalSeconds,
+            Position = current.TotalSeconds
+        });
+        await InvokeAsync(() =>
             {
                 _sliderValue = (int)current.TotalSeconds;
                 _sliderMax = (int)total.TotalSeconds;
@@ -168,6 +166,8 @@
         Howl.OnPlay += async (e) =>
         {
             await MediaSession.SetPlaybackState(PlaybackState.Playing);
+            if(_currentItem != null)
+                await MediaSession.SetMediaMetadata(_currentItem.ToMediaMetadata());
             await InvokeAsync(() =>
             {
                 _playbackState = PlaybackState.Playing;
@@ -207,8 +207,11 @@
     {
         if (_soundId.HasValue)
             await Howl.Stop(_soundId.Value);
-        await MediaSession.SetMediaMetadata(item.ToMediaMetadata());
-        _soundId = await Howl.Play(item.Source);
+        _soundId = await Howl.Play(new HowlOptions
+        {
+            Sources = new string[] { item.Source },
+            Html5 = true
+        });
         await InvokeAsync(() =>
         {
             _currentItem = item;
