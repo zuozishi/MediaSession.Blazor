@@ -22,9 +22,9 @@ jobs:
 
       - name: Package and Publish📦
         run: |
-        VERSION=`git describe --tags`
-        echo "Publishing Version: ${VERSION}"
-        dotnet build
-        dotnet pack $PACKAGE_ID/$PACKAGE_ID.csproj /p:PackageVersion=$VERSION -c Release -o publish
-        dotnet nuget push publish/*.nupkg --api-key $GITHUB_TOKEN --source "github" --skip-duplicate
-        dotnet nuget push publish/*.nupkg --api-key $NUGET_SECRET --source "https://api.nuget.org/v3/index.json" --skip-duplicate
+          VERSION=`git describe --tags`
+          echo "Publishing Version: ${VERSION}"
+          dotnet build
+          dotnet pack $PACKAGE_ID/$PACKAGE_ID.csproj /p:PackageVersion=$VERSION -c Release -o publish
+          dotnet nuget push publish/*.nupkg --api-key $GITHUB_TOKEN --source "github" --skip-duplicate
+          dotnet nuget push publish/*.nupkg --api-key $NUGET_SECRET --source "https://api.nuget.org/v3/index.json" --skip-duplicate
