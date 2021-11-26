@@ -137,7 +137,7 @@
       "url": "_framework\/icudt.dat"
     },
     {
-      "hash": "sha256-78DB7LjqCf3\/Tdeer0PxlWPY0zbPJZzpumx0\/RhjeE0=",
+      "hash": "sha256-svEZgL1Hk438ywuxQ6IqvOY\/Y3wwXAlyal7ME5NTN7w=",
       "url": "_framework\/blazor.boot.json"
     },
     {
@@ -149,11 +149,11 @@
       "url": "_framework\/Howler.Blazor.dll"
     },
     {
-      "hash": "sha256-YzGdP+LhZf+GZ70QTOxd5Ky5BiBf6BAb2TiDykMtQO0=",
+      "hash": "sha256-OXGWtJ3rV9UR20eRWD1H+OEwq6DJ1W+1B9Io68dZ6wk=",
       "url": "_framework\/MediaSession.Blazor.dll"
     },
     {
-      "hash": "sha256-c4uvw08JEfVCMfePfefz66MAtCPEgNL01ZKlJj99A\/g=",
+      "hash": "sha256-UI3y1qgOQoEPfCKtIaCWQ1wMXHStQNSiGuhEnNixfxQ=",
       "url": "_framework\/MediaSession.Blazor.Sample.dll"
     },
     {
@@ -1657,5 +1657,5 @@
       "url": "_content\/MediaSession.Blazor\/interop.js"
     }
   ],
-  "version": "gdkrt55k"
+  "version": "OIXwyplb"
 };
