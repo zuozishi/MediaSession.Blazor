@@ -8,9 +8,9 @@ A Blazor JSInterop wrapper for [Media Session API](https://developer.mozilla.org
 
 > It also provides action handlers that the browser can use to access platform media keys such as hardware keys found on keyboards, headsets, remote controls, and software keys found in notification areas and on lock screens of mobile devices. So you can seamlessly control web-provided media via your device, even when not looking at the web page.
 
-![edge_windows](https://raw.githubusercontent.com/Zuozishi/MediaSession.Blazor/master/resources/edge_windows.png"edge_windows")
+![edge_windows](https://raw.githubusercontent.com/Zuozishi/MediaSession.Blazor/master/resources/edge_windows.png)
 
-![chrome](https://raw.githubusercontent.com/Zuozishi/MediaSession.Blazor/master/resources/chrome.jpg"chrome")
+![chrome](https://raw.githubusercontent.com/Zuozishi/MediaSession.Blazor/master/resources/chrome.jpg)
 
 ## Live Demo
 

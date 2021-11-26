@@ -3,6 +3,9 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [ master ]
+    paths:
+      - 'MediaSession.Blazor/**'
+      - 'MediaSession.Blazor.Sample/**'
 
 jobs:
   build:
