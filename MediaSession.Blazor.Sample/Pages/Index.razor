@@ -1,5 +1,6 @@
 ﻿@page "/"
 @using MediaSession.Blazor.Components
+@using MediaSession.Blazor.Components.Types
 
 @inject IHowl Howl
 @inject IMediaSession MediaSession
@@ -24,19 +25,29 @@
         <SpaceItem>
             <Space>
                 <SpaceItem>
-                    <Button @onclick="MovePrevious" Icon="@IconType.Outline.StepBackward">Previous</Button>
+                    <Button @onclick="MovePrevious" Icon="@IconType.Fill.StepBackward">Previous</Button>
                 </SpaceItem>
                 <SpaceItem>
                     @if(_playbackState == PlaybackState.Playing)
                     {
-                        <Button @onclick="Pause" Icon="@IconType.Outline.PauseCircle">Pause</Button>
+                        <Button @onclick="Pause" Icon="@IconType.Fill.PauseCircle">Pause</Button>
                     }else
                     {
-                        <Button @onclick="Play" Icon="@IconType.Outline.PlayCircle">Play</Button>
+                        <Button @onclick="Play" Icon="@IconType.Fill.PlayCircle">Play</Button>
                     }
                 </SpaceItem>
                 <SpaceItem>
-                    <Button @onclick="MoveNext" Icon="@IconType.Outline.StepForward">Next</Button>
+                    <Button @onclick="MoveNext" Icon="@IconType.Fill.StepForward">Next</Button>
+                </SpaceItem>
+                <SpaceItem>
+                    @if(isPictureInPictureEnabled)
+                    {
+                        <Button @onclick="() => MediaSession.ExitPictureInPicture()" Icon="@IconType.Outline.VerticalAlignBottom">Exit Picture-in-Picture</Button>
+                    }
+                    else
+                    {
+                        <Button @onclick="() => MediaSession.RequestPictureInPicture()" Icon="@IconType.Outline.VerticalAlignTop">Enter Picture-in-Picture</Button>
+                    }
                 </SpaceItem>
             </Space>
         </SpaceItem>
@@ -77,9 +88,12 @@
     private System.Timers.Timer _timer;
     private double _sliderValue = 0;
     private double _sliderMax = 0;
+    private bool isPictureInPictureEnabled = false;
 
-    protected override Task OnInitializedAsync()
+    protected override async Task OnInitializedAsync()
     {
+        await MediaSession.SetDebugMode(true);
+        isPictureInPictureEnabled = await MediaSession.IsPictureInPictureEnabled();
         _timer = new(1000);
         _timer.Elapsed += async (s, e) =>
         {
@@ -99,28 +113,47 @@
             });
         };
         _timer.Enabled = true;
-        MediaSession.OnPause += async () =>
+        MediaSession.OnMediaSessionAction += async (s, e) =>
         {
-            if (_soundId.HasValue)
-                await Howl.Pause(_soundId.Value);
+            Console.WriteLine("OnMediaSessionAction: " + e.Action.ToString());
+            switch (e.Action)
+            {
+                case MediaSessionActionTypes.Pause:
+                    if (_soundId.HasValue)
+                        await Howl.Pause(_soundId.Value);
+                    break;
+                case MediaSessionActionTypes.Play:
+                    if (_soundId.HasValue)
+                        await Howl.Play(_soundId.Value);
+                    break;
+                case MediaSessionActionTypes.NextTrack:
+                    await MoveNext();
+                    break;
+                case MediaSessionActionTypes.PreviousTrack:
+                    await MovePrevious();
+                    break;
+                case MediaSessionActionTypes.SeekTo:
+                    if (_soundId.HasValue)
+                        await Howl.Seek(_soundId.Value, TimeSpan.FromSeconds(e.SeekTime.Value));
+                    break;
+                default: break;
+            }
         };
-        MediaSession.OnPlay += async () =>
+        MediaSession.OnPictureInPictureEnter += async (s) =>
         {
-            if (_soundId.HasValue)
-                await Howl.Play(_soundId.Value);
+            await InvokeAsync(() =>
+            {
+                isPictureInPictureEnabled = true;
+                StateHasChanged();
+            });
         };
-        MediaSession.OnNextTrack += async () =>
+        MediaSession.OnPictureInPictureLeave += async (s) =>
         {
-            await MoveNext();
-        };
-        MediaSession.OnPreviouStrack += async () =>
-        {
-            await MovePrevious();
-        };
-        MediaSession.OnSeekTo += async (e) =>
-        {
-            if (_soundId.HasValue)
-                await Howl.Seek(_soundId.Value, TimeSpan.FromSeconds(e.SeekTime));
+            await InvokeAsync(() =>
+            {
+                isPictureInPictureEnabled = false;
+                StateHasChanged();
+            });
         };
         Howl.OnPause += async (e) =>
         {
@@ -154,28 +187,19 @@
         {
             await MoveNext();
         };
-        return base.OnInitializedAsync();
     }
 
     private async Task MoveNext()
     {
-        int index = -1;
-        if (_currentItem != null)
-            index = MusicItems.IndexOf(_currentItem);
-        index += 1;
-        if (index >= MusicItems.Count)
-            index = 0;
+        int index = _currentItem != null ? MusicItems.IndexOf(_currentItem) : -1;
+        index = (index + 1) % MusicItems.Count;
         await Play(MusicItems[index]);
     }
 
     private async Task MovePrevious()
     {
-        int index = MusicItems.Count;
-        if (_currentItem != null)
-            index = MusicItems.IndexOf(_currentItem);
-        index -= 1;
-        if(index < 0)
-            index = MusicItems.Count - 1;
+        int index = _currentItem != null ? MusicItems.IndexOf(_currentItem) : MusicItems.Count;
+        index = (index - 1 + MusicItems.Count) % MusicItems.Count;
         await Play(MusicItems[index]);
     }
 

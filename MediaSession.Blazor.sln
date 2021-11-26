@@ -5,7 +5,18 @@ VisualStudioVersion = 17.1.31911.260
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MediaSession.Blazor", "MediaSession.Blazor\MediaSession.Blazor.csproj", "{2B6DFCB9-B8EC-445E-ACFF-2978346E8E54}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaSession.Blazor.Sample", "MediaSession.Blazor.Sample\MediaSession.Blazor.Sample.csproj", "{A0C4374E-1177-4E4F-8E83-1452E7293BAD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MediaSession.Blazor.Sample", "MediaSession.Blazor.Sample\MediaSession.Blazor.Sample.csproj", "{A0C4374E-1177-4E4F-8E83-1452E7293BAD}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ProjectFiles", "ProjectFiles", "{D4488ABF-17D0-4719-BCD3-F067AFB7B12D}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Github Actions", "Github Actions", "{0278362C-0022-4611-BBFC-00ED5C615DBB}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\gh-pages.yml = .github\workflows\gh-pages.yml
+		.github\workflows\release.yml = .github\workflows\release.yml
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -24,6 +35,9 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{0278362C-0022-4611-BBFC-00ED5C615DBB} = {D4488ABF-17D0-4719-BCD3-F067AFB7B12D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A43694C7-CBF8-45C3-9913-42ABA2F406D1}

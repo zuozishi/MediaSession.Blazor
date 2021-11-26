@@ -1,15 +1,20 @@
 ﻿using MediaSession.Blazor.Components.Events;
+using Microsoft.JSInterop;
 
 namespace MediaSession.Blazor.Components;
 
 public partial class MediaSession
 {
-    public event Action OnPlay;
-    public event Action OnPause;
-    public event Action OnStop;
-    public event Action OnPreviouStrack;
-    public event Action OnNextTrack;
-    public event Action<MediaSessionSeekToEventArgs> OnSeekTo;
-    public event Action OnSeekBackward;
-    public event Action OnSeekForward;
+    public event TypedEventHandler<IMediaSession, MediaSessionActionEventArgs> OnMediaSessionAction;
+    public event TypedEventHandler<IMediaSession> OnPictureInPictureEnter;
+    public event TypedEventHandler<IMediaSession> OnPictureInPictureLeave;
+
+    [JSInvokable]
+    public void OnMediaSessionActionCallback(MediaSessionActionEventArgs args) => OnMediaSessionAction?.Invoke(this, args);
+
+    [JSInvokable]
+    public void OnPictureInPictureEnterCallback() => OnPictureInPictureEnter?.Invoke(this);
+
+    [JSInvokable]
+    public void OnOnPictureInPictureLeaveCallback() => OnPictureInPictureLeave?.Invoke(this);
 }

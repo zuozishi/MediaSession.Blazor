@@ -1,4 +1,5 @@
 ﻿@inherits LayoutComponentBase
+@inject IJSRuntime JSRuntime
 
 <div class="page">
     <div class="sidebar">
@@ -7,7 +8,7 @@
 
     <main>
         <div class="top-row px-4">
-            <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
+            <Button Type="@ButtonType.Primary" Icon="@IconType.Outline.Github" OnClick="NavigateToGithub" Ghost>View On Github</Button>
         </div>
 
         <article class="content px-4">
@@ -15,3 +16,10 @@
         </article>
     </main>
 </div>
+
+@code{
+    private async Task NavigateToGithub()
+    {
+        await JSRuntime.InvokeVoidAsync("window.open", "https://github.com/zuozishi/MediaSession.Blazor");
+    }
+}

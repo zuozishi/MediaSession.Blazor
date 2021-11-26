@@ -16,7 +16,7 @@ public partial class MediaSession : IMediaSession, IAsyncDisposable
         _ = RegisterEvents();
     }
 
-    private async ValueTask RegisterEvents()
+    private async Task RegisterEvents()
     {
         var module = await moduleTask.Value;
         await module.InvokeVoidAsync("registerEvents", objRef);
@@ -34,7 +34,7 @@ public partial class MediaSession : IMediaSession, IAsyncDisposable
         return await module.InvokeAsync<PlaybackState>("getState");
     }
 
-    public async ValueTask SetPlaybackState(PlaybackState state)
+    public async Task SetPlaybackState(PlaybackState state)
     {
         var module = await moduleTask.Value;
         await module.InvokeVoidAsync("setState", state);
@@ -46,7 +46,7 @@ public partial class MediaSession : IMediaSession, IAsyncDisposable
         return await module.InvokeAsync<MediaMetadata>("getMetadata");
     }
 
-    public async ValueTask SetMediaMetadata(MediaMetadata metadata)
+    public async Task SetMediaMetadata(MediaMetadata metadata)
     {
         if (metadata == null)
             throw new ArgumentNullException(nameof(metadata));
@@ -54,12 +54,42 @@ public partial class MediaSession : IMediaSession, IAsyncDisposable
         await module.InvokeVoidAsync("setMeatadata", metadata);
     }
 
-    public async ValueTask SetPositionState(PositionState state)
+    public async Task SetPositionState(PositionState state)
     {
         if (state == null)
             throw new ArgumentNullException(nameof(state));
         var module = await moduleTask.Value;
         await module.InvokeVoidAsync("setPositionState", state);
+    }
+
+    public async ValueTask<bool> IsDebugMode()
+    {
+        var module = await moduleTask.Value;
+        return await module.InvokeAsync<bool>("isDebugMode");
+    }
+
+    public async Task SetDebugMode(bool mode)
+    {
+        var module = await moduleTask.Value;
+        await module.InvokeVoidAsync("setDebugMode", mode);
+    }
+
+    public async Task RequestPictureInPicture()
+    {
+        var module = await moduleTask.Value;
+        await module.InvokeVoidAsync("requestPictureInPicture");
+    }
+
+    public async Task ExitPictureInPicture()
+    {
+        var module = await moduleTask.Value;
+        await module.InvokeVoidAsync("exitPictureInPicture");
+    }
+
+    public async ValueTask<bool> IsPictureInPictureEnabled()
+    {
+        var module = await moduleTask.Value;
+        return await module.InvokeAsync<bool>("isPictureInPictureEnabled");
     }
 
     public async ValueTask DisposeAsync()
@@ -69,5 +99,6 @@ public partial class MediaSession : IMediaSession, IAsyncDisposable
             var module = await moduleTask.Value;
             await module.DisposeAsync();
         }
+        GC.SuppressFinalize(this);
     }
 }

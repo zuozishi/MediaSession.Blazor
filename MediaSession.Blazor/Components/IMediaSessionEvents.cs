@@ -4,19 +4,14 @@ namespace MediaSession.Blazor.Components;
 
 public interface IMediaSessionEvents
 {
-    event Action OnPlay;
+    /// <summary>
+    /// Sets a handler for a media session action.
+    /// <para>These actions let a web app receive notifications when the user engages a device's built-in physical or onscreen media controls, such as play, stop, or seek buttons.</para>
+    /// <para><see href="https://developer.mozilla.org/en-US/docs/Web/API/MediaSession/setActionHandler"/></para>
+    /// </summary>
+    event TypedEventHandler<IMediaSession, MediaSessionActionEventArgs> OnMediaSessionAction;
 
-    event Action OnPause;
+    event TypedEventHandler<IMediaSession> OnPictureInPictureEnter;
 
-    event Action OnStop;
-
-    event Action OnPreviouStrack;
-
-    event Action OnNextTrack;
-
-    event Action<MediaSessionSeekToEventArgs> OnSeekTo;
-
-    event Action OnSeekBackward;
-
-    event Action OnSeekForward;
+    event TypedEventHandler<IMediaSession> OnPictureInPictureLeave;
 }
