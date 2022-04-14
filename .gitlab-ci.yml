@@ -1,0 +1,20 @@
+image: mcr.microsoft.com/dotnet/sdk:6.0
+
+variables:
+  APP_NAME: MediaSession.Blazor.Sample
+
+pages:
+  stage: pages
+  script:
+    - sed -i 's/<base href="\/" \/>/<base href="\/MediaSession.Blazor\/" \/>/g' $APP_NAME/wwwroot/index.html
+    - touch $APP_NAME/wwwroot/.nojekyll
+    - dotnet publish $APP_NAME/$APP_NAME.csproj -c Release -o release
+  artifacts:
+    paths:
+      - release/wwwroot
+  only:
+    refs:
+      - master
+    changes:
+      - MediaSession.Blazor/**
+      - MediaSession.Blazor.Sample/**
