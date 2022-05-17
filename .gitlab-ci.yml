@@ -9,9 +9,10 @@ pages:
     - sed -i 's/<base href="\/" \/>/<base href="\/MediaSession.Blazor\/" \/>/g' $APP_NAME/wwwroot/index.html
     - touch $APP_NAME/wwwroot/.nojekyll
     - dotnet publish $APP_NAME/$APP_NAME.csproj -c Release -o release
+    - mv ./release/wwwroot ./public
   artifacts:
     paths:
-      - release/wwwroot
+      - public
   only:
     refs:
       - master
