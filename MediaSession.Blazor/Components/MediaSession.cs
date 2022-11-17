@@ -1,17 +1,20 @@
 using MediaSession.Blazor.Components.Models;
+using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
 namespace MediaSession.Blazor.Components;
 
 public partial class MediaSession : IMediaSession, IAsyncDisposable
 {
+    private readonly string scriptPath = "_content/MediaSession.Blazor/interop.js";
+
     private readonly Lazy<Task<IJSObjectReference>> moduleTask;
     private readonly DotNetObjectReference<MediaSession> objRef;
 
-    public MediaSession(IJSRuntime jsRuntime)
+    public MediaSession(IJSRuntime jsRuntime, NavigationManager navManager)
     {
-        moduleTask = new(() => jsRuntime.InvokeAsync<IJSObjectReference>(
-           "import", "/_content/MediaSession.Blazor/interop.js").AsTask());
+        var path = navManager.ToAbsoluteUri(this.scriptPath);
+        moduleTask = new(() => jsRuntime.InvokeAsync<IJSObjectReference>("import", path).AsTask());
         objRef = DotNetObjectReference.Create(this);
         _ = RegisterEvents();
     }
