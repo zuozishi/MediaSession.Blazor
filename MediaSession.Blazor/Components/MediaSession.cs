@@ -11,7 +11,7 @@ public partial class MediaSession : IMediaSession, IAsyncDisposable
     public MediaSession(IJSRuntime jsRuntime)
     {
         moduleTask = new(() => jsRuntime.InvokeAsync<IJSObjectReference>(
-           "import", "./_content/MediaSession.Blazor/interop.js").AsTask());
+           "import", "/_content/MediaSession.Blazor/interop.js").AsTask());
         objRef = DotNetObjectReference.Create(this);
         _ = RegisterEvents();
     }
