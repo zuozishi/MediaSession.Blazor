@@ -4,7 +4,7 @@
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
-    <StaticWebAssetBasePath Condition="'$(Configuration)' == 'Release'>MediaSession.Blazor/</StaticWebAssetBasePath>
+    <StaticWebAssetBasePath Condition="'$(Configuration)' == 'Release'">MediaSession.Blazor/</StaticWebAssetBasePath>
   </PropertyGroup>
 
   <ItemGroup>
