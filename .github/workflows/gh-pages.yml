@@ -20,8 +20,8 @@ jobs:
         with:
           dotnet-version: 6.0.x
 
-      - name: Rewrite base href
-        run: sed -i 's/<base href="\/" \/>/<base href="\/MediaSession.Blazor\/" \/>/g' $APP_NAME/wwwroot/index.html
+      #- name: Rewrite base href
+      #  run: sed -i 's/<base href="\/" \/>/<base href="\/MediaSession.Blazor\/" \/>/g' $APP_NAME/wwwroot/index.html
 
       - name: Add .nojekyll file
         run: touch $APP_NAME/wwwroot/.nojekyll
